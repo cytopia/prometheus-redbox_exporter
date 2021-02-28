@@ -2,11 +2,13 @@ ifneq (,)
 .error This Makefile requires GNU Make.
 endif
 
+
 # -------------------------------------------------------------------------------------------------
 # Can be changed
 # -------------------------------------------------------------------------------------------------
 # This can be adjusted
 PYTHON_VERSION = 3.7
+
 
 # -------------------------------------------------------------------------------------------------
 # Default configuration
@@ -14,7 +16,7 @@ PYTHON_VERSION = 3.7
 .PHONY: help lint code build install clean
 SHELL := /bin/bash
 
-NAME = $(shell grep -E '^[[:space:]]*name' setup.py  | awk -F'"' '{print $$2}')
+NAME = $(shell grep -E '^[[:space:]]*name' setup.py  | awk -F'"' '{print $$2}' | sed 's/-/_/g' )
 VENV = env
 SRC  = $(NAME)
 
@@ -58,52 +60,6 @@ clean:
 	@echo "!!! Run the following to deactivate the virtual env !!!"
 	@echo
 	@echo "deactivate"
-
-
-# -------------------------------------------------------------------------------------------------
-# Build Targets
-# -------------------------------------------------------------------------------------------------
-build: clean
-build: _lint-version
-build: _build-source_dist
-build: _build-binary_dist
-build: _build-python_package
-
-.PHONY: _build_source_dist
-_build-source_dist:
-	@echo "Create source distribution"
-	docker run \
-		--rm \
-		$$(tty -s && echo "-it" || echo) \
-		-v $(PWD):/data \
-		-w /data \
-		-u $$(id -u):$$(id -g) \
-		python:$(PYTHON_VERSION)-alpine \
-		python setup.py sdist
-
-.PHONY: _build_binary_dist
-_build-binary_dist:
-	@echo "Create binary distribution"
-	docker run \
-		--rm \
-		$$(tty -s && echo "-it" || echo) \
-		-v $(PWD):/data \
-		-w /data \
-		-u $$(id -u):$$(id -g) \
-		python:$(PYTHON_VERSION)-alpine \
-		python setup.py bdist_wheel --universal
-
-.PHONY: _build_python_package
-_build-python_package:
-	@echo "Build Python package"
-	docker run \
-		--rm \
-		$$(tty -s && echo "-it" || echo) \
-		-v $(PWD):/data \
-		-w /data \
-		-u $$(id -u):$$(id -g) \
-		python:$(PYTHON_VERSION)-alpine \
-		python setup.py build
 
 
 # -------------------------------------------------------------------------------------------------
@@ -152,7 +108,7 @@ _lint-name:
 	@echo "# Check name"
 	@echo "# -------------------------------------------------------------------- #"
 	@NAME_CODE=$$( cat redbox/defaults.py  | grep ^DEF_NAME | awk -F'"' '{print $$2}' ); \
-	NAME_SETUP=$$( grep name= setup.py | awk -F'"' '{print $$2}' || true ); \
+	NAME_SETUP=$$( grep ':main' setup.py | awk -F"'" '{print $$2}' | awk -F'=' '{print $$1}' ); \
 	if [ "$${NAME_CODE}" != "$${NAME_SETUP}" ]; then \
 		echo "[ERROR] Name mismatch"; \
 		echo "redbox/defaults.py   $${NAME_CODE}"; \
@@ -231,6 +187,79 @@ _code-mypy:
 	@echo "# Check mypy"
 	@echo "# -------------------------------------------------------------------- #"
 	docker run --rm $$(tty -s && echo "-it" || echo) -v ${PWD}:/data cytopia/mypy --config-file setup.cfg redbox/
+
+
+# -------------------------------------------------------------------------------------------------
+# Build Targets
+# -------------------------------------------------------------------------------------------------
+build: clean
+build: _lint-version
+build: _build-source_dist
+build: _build-binary_dist
+build: _build-python_package
+build: _build-check_python_package
+
+.PHONY: _build_source_dist
+_build-source_dist:
+	@echo "Create source distribution"
+	docker run \
+		--rm \
+		$$(tty -s && echo "-it" || echo) \
+		-v $(PWD):/data \
+		-w /data \
+		-u $$(id -u):$$(id -g) \
+		python:$(PYTHON_VERSION)-alpine \
+		python setup.py sdist
+
+.PHONY: _build_binary_dist
+_build-binary_dist:
+	@echo "Create binary distribution"
+	docker run \
+		--rm \
+		$$(tty -s && echo "-it" || echo) \
+		-v $(PWD):/data \
+		-w /data \
+		-u $$(id -u):$$(id -g) \
+		python:$(PYTHON_VERSION)-alpine \
+		python setup.py bdist_wheel --universal
+
+.PHONY: _build_python_package
+_build-python_package:
+	@echo "Build Python package"
+	docker run \
+		--rm \
+		$$(tty -s && echo "-it" || echo) \
+		-v $(PWD):/data \
+		-w /data \
+		-u $$(id -u):$$(id -g) \
+		python:$(PYTHON_VERSION)-alpine \
+		python setup.py build
+
+.PHONY: _build_check_python_package
+_build-check_python_package:
+	@echo "Check Python package"
+	docker run \
+		--rm \
+		$$(tty -s && echo "-it" || echo) \
+		-v $(PWD):/data \
+		-w /data \
+		python:$(PYTHON_VERSION)-slim \
+		sh -c "pip install twine \
+		&& twine check dist/*"
+
+
+# -------------------------------------------------------------------------------------------------
+# Publish Targets
+# -------------------------------------------------------------------------------------------------
+deploy: _build-check_python_package
+	docker run \
+		--rm \
+		$$(tty -s && echo "-it" || echo) \
+		-v $(PWD):/data \
+		-w /data \
+		python:$(PYTHON_VERSION)-slim \
+		sh -c "pip install twine \
+		&& twine upload dist/*"
 
 
 # -------------------------------------------------------------------------------------------------

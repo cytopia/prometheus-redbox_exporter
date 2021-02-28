@@ -9,7 +9,7 @@ __pycache__
 # Build artifacts
 # --------------------------------------------------------------------------------------------------
 .mypy_cache/*
-redbox_exporter.egg-info/
+prometheus_redbox_exporter.egg-info/
 env/
 build/
 dist/
