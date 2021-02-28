@@ -1,0 +1,185 @@
+---
+#
+# Example configuration
+#
+
+
+# Both optional values can be overriden with command line arguments.
+# If neither of them are specified here or via command line arguments,
+# they default to 0.0.0.0:8080
+listen_port: 8080
+listen_addr: 0.0.0.0
+
+
+# Set this to one second less than Prometheus' scrape_timeout value.
+scrape_timeout: 29
+
+
+# This defines the targets you want to monitor
+# See redbox/config/template.py for all possible values and types.
+targets:
+
+
+  #- name:    # Must be unique across all target entries
+  #           # Will be available in Prometheus via name=""
+  #
+  #  groups:  # Key will be available in Prometheus as group_<key>="" its valuea
+  #           # Useful for filtering
+  #    name: google               # group_name="google"
+  #    group: searchengine        # group_group="searchengine"
+  #    country: de                # group_country="de"
+  #    env: prod                  # group_env="prod"
+  #    page: homepage             # group_page="homepage"
+  #
+  #  url: https://www.google.de   # URL to scrape
+  #  method: get                  # get, post, put, delete, head, etc
+  #  params: {}                   # Key value pair of params (like curl -d )
+  #  headers: {}                  # Key value pair of additional headers
+  #  timeout: 28                  # Timeout (should be shorter than scrape_timeout)
+  #  fail_if:                     # Fail conditions
+  #    status_code_not_in: [200]  # evaluates status code
+  #  extract:                     # List of regexes to extract data from the response body
+  #    '*':                       # Extract for all return status codes
+  #      - '.{500}connect to server.{500}'
+  #      - '\<h1.*\>(.+)\<\/h1\>'
+  #    '5xx':                     # Extract if any 5xx return status code
+  #      - '.{500}connect to server.{500}'
+  #    '505':                     # Only extract if return status code equals 505
+  #      - '.{500}connect to server.{500}'
+
+
+
+
+  # -----------------------------------------------------------------------------------------------
+  # google.de
+  # -----------------------------------------------------------------------------------------------
+
+  # homepage
+  - name: google.de
+    groups:
+      name: google
+      group: searchengine
+      country: de
+      env: prod
+      page: homepage
+    url: https://www.google.de
+    method: get
+    params: {}
+    headers: {}
+    timeout: 28
+    fail_if:
+      status_code_not_in: [200]
+    extract:
+      '*':
+        - '.{500}connect to server.{500}'
+        - '\<h1.*\>(.+)\<\/h1\>'
+
+  # searchpage
+  - name: google.de-search
+    groups:
+      name: google
+      group: searchengine
+      country: de
+      env: prod
+      page: search
+    url: https://www.google.de/search?q=test
+    method: get
+    params: {}
+    headers: {}
+    timeout: 28
+    fail_if:
+      status_code_not_in: [200]
+    extract:
+      '*':
+        - '.{500}connect to server.{500}'
+        - '\<h1.*\>(.+)\<\/h1\>'
+
+
+  # -----------------------------------------------------------------------------------------------
+  # google.com
+  # -----------------------------------------------------------------------------------------------
+
+  # homepage
+  - name: google.com
+    groups:
+      name: google
+      group: searchengine
+      country: us
+      env: prod
+      page: homepage
+    url: https://www.google.com
+    method: get
+    params: {}
+    headers: {}
+    timeout: 28
+    fail_if:
+      status_code_not_in: [200]
+    extract:
+      '*':
+        - '.{500}connect to server.{500}'
+        - '\<h1.*\>(.+)\<\/h1\>'
+
+  # searchpage
+  - name: google.com-search
+    groups:
+      name: google
+      group: searchengine
+      country: us
+      env: prod
+      page: search
+    url: https://www.google.com/search?q=test
+    method: get
+    params: {}
+    headers: {}
+    timeout: 28
+    fail_if:
+      status_code_not_in: [200]
+    extract:
+      '*':
+        - '.{500}connect to server.{500}'
+        - '\<h1.*\>(.+)\<\/h1\>'
+
+
+  # -----------------------------------------------------------------------------------------------
+  # duckduckgo.com
+  # -----------------------------------------------------------------------------------------------
+
+  # homepage
+  - name: duckduckgo.com
+    groups:
+      name: ddg
+      group: searchengine
+      country: us
+      env: prod
+      page: homepage
+    url: https://duckduckgo.com/
+    method: get
+    params: {}
+    headers: {}
+    timeout: 28
+    fail_if:
+      status_code_not_in: [200]
+    extract:
+      '*':
+        - '.{500}connect to server.{500}'
+        - '\<h1.*\>(.+)\<\/h1\>'
+
+  # searchpage
+  - name: duckduckgo.com-search
+    groups:
+      name: ddg
+      group: searchengine
+      country: us
+      env: prod
+      page: search
+    url: https://duckduckgo.com/?q=test
+    method: get
+    params: {}
+    headers: {}
+    timeout: 28
+    fail_if:
+      status_code_not_in: [200]
+    extract:
+      '*':
+        - '.{500}connect to server.{500}'
+        - '\<h1.*\>(.+)\<\/h1\>'

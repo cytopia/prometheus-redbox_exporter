@@ -1,0 +1,74 @@
+---
+version: '2.1'
+
+services:
+  redbox_exporter:
+    build: ../
+    volumes:
+      - ./volumes/redbox/conf.yml:/etc/redbox/conf.yml
+    command:
+      - '-c/etc/redbox/conf.yml'
+      - '-p9100'
+      - '-l0.0.0.0'
+    restart: unless-stopped
+    expose:
+      - 9100
+    ports:
+      - "9100:9100"
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  # https://hub.docker.com/r/prom/prometheus/tags?page=1&ordering=last_updated
+  prometheus:
+    image: prom/prometheus:v2.25.0
+    container_name: prometheus
+    volumes:
+      - ./volumes/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    expose:
+      - 9090
+    ports:
+      - "9090:9090"
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  # https://hub.docker.com/r/grafana/grafana/tags?page=1&ordering=last_updated
+  grafana:
+    image: grafana/grafana:7.4.2
+    container_name: grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./volumes/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    restart: unless-stopped
+    expose:
+      - 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+networks:
+  monitor-net:
+    driver: bridge
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
