@@ -3,6 +3,7 @@
 from typing import Callable, Any
 
 import concurrent.futures
+import os
 import sys
 import threading
 import time
@@ -11,12 +12,13 @@ import timeit
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
-from mypy_extensions import VarArg
-
 from .args import *
 from .config import *
 from .request import *
 from .prometheus import *
+
+if os.environ.get("MYPY_CHECK", False):
+    from mypy_extensions import VarArg
 
 
 class Handler(BaseHTTPRequestHandler):

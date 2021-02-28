@@ -19,7 +19,6 @@ jobs:
       fail-fast: False
       matrix:
         version:
-          - '2.7'
           - '3.5'
           - '3.6'
           - '3.7'
@@ -45,5 +44,11 @@ jobs:
       - name: Build Python package
         run: |
           make _build-python_package PYTHON_VERSION=${version}
+        env:
+          version: ${{ matrix.version }}
+
+      - name: Check Python package
+        run: |
+          make _build-check_python_package PYTHON_VERSION=${version}
         env:
           version: ${{ matrix.version }}
