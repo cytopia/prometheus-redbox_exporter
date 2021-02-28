@@ -171,7 +171,6 @@ _code-pylint:
 	@echo "# -------------------------------------------------------------------- #"
 	docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data --entrypoint=sh cytopia/pylint -c '\
 		pip3 install -r requirements.txt \
-		&& pip3 install mypy_extensions \
 		&& pylint --rcfile=setup.cfg redbox/'
 
 .PHONY: _code-black

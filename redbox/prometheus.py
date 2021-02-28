@@ -8,6 +8,13 @@ from .types import DsResponse
 METRIC_PREFIX = "redbox"
 
 
+def __float2str(value: float) -> str:
+    """Convert a float into a human readable string representatoin."""
+    if value == 0.0:
+        return "0.0"
+    return "{0:.5f}".format(value)
+
+
 def _get_metrics(responses: List[DsResponse], metric_settings: Dict[str, Any]) -> List[str]:
     """Wrapper function to get formated prometheus metrics."""
     m_name = metric_settings["name"]
@@ -26,15 +33,15 @@ def _get_metrics(responses: List[DsResponse], metric_settings: Dict[str, Any]) -
         groups = ['group_{}="{}",'.format(key, response.groups[key]) for key in response.groups]
         url = response.url
         size = response.size
-        time_ttfb = response.time_ttfb
-        time_download = response.time_download
-        time_render = response.time_render
-        time_total = response.time_total
+        time_ttfb = __float2str(response.time_ttfb)
+        time_download = __float2str(response.time_download)
+        time_render = __float2str(response.time_render)
+        time_total = __float2str(response.time_total)
         status_code = response.status_code
         status_family = response.status_family
         success = "1" if response.success else "0"
         err_msg = response.err_msg
-        extract = response.extract
+        extract = "\\n".join(response.extract)
 
         lines.append(
             f"{metric}{{"
@@ -60,7 +67,7 @@ def _get_time_ttfb(responses: List[DsResponse]) -> List[str]:
         "name": "time_ttfb",
         "type": "untyped",
         "help": "Returns the TTFB time in seconds (time taken for headers to arrive).",
-        "func": lambda response: str(response.time_ttfb),
+        "func": lambda response: __float2str(response.time_ttfb),
     }
     return _get_metrics(responses, metric_settings)
 
@@ -71,7 +78,7 @@ def _get_time_download(responses: List[DsResponse]) -> List[str]:
         "name": "time_download",
         "type": "untyped",
         "help": "Returns the download time in seconds (time taken to download the body).",
-        "func": lambda response: str(response.time_download),
+        "func": lambda response: __float2str(response.time_download),
     }
     return _get_metrics(responses, metric_settings)
 
@@ -82,7 +89,7 @@ def _get_time_render(responses: List[DsResponse]) -> List[str]:
         "name": "time_render",
         "type": "untyped",
         "help": "Returns the render time in seconds (time taken to HTML/JS render the body).",
-        "func": lambda response: str(response.time_render),
+        "func": lambda response: __float2str(response.time_render),
     }
     return _get_metrics(responses, metric_settings)
 
@@ -93,7 +100,7 @@ def _get_time_total(responses: List[DsResponse]) -> List[str]:
         "name": "time_total",
         "type": "untyped",
         "help": "Returns the total time in seconds (time taken to request, render and download).",
-        "func": lambda response: str(response.time_total),
+        "func": lambda response: __float2str(response.time_total),
     }
     return _get_metrics(responses, metric_settings)
 
@@ -115,7 +122,7 @@ def _get_failure(responses: List[DsResponse]) -> List[str]:
         "name": "failure",
         "type": "untyped",
         "help": "Returns '1' if request or defined conditions fail or '0' on success.",
-        "func": lambda response: "0" if response.success == 1 else "1",
+        "func": lambda response: "0" if response.success else "1",
     }
     return _get_metrics(responses, metric_settings)
 
@@ -125,8 +132,8 @@ def _get_success(responses: List[DsResponse]) -> List[str]:
     metric_settings = {
         "name": "success",
         "type": "untyped",
-        "help": "Returns '1' if request or defined conditions succeed or '0' on failure.",
-        "func": lambda response: str(response.success),
+        "help": "Returns '1' if request and defined conditions succeed or '0' on failure.",
+        "func": lambda response: "1" if response.success else "0",
     }
     return _get_metrics(responses, metric_settings)
 

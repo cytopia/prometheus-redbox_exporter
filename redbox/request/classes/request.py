@@ -68,7 +68,7 @@ class Request(ABC):
                 "groups": target.groups,
                 "url": target.url,
                 "headers": [],
-                "body": "",
+                "body": b"",
                 "size": 0,
                 "time_ttfb": 0,
                 "time_download": 0,
