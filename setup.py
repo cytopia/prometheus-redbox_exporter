@@ -12,7 +12,7 @@ with open("requirements.txt", "r") as fp:
 setup(
     name="prometheus-redbox-exporter",
     python_requires='>3.5.2',
-    version="0.1.2",
+    version="0.1.3",
     packages=[
         "redbox",
         "redbox.config",

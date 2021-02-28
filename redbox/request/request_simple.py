@@ -73,7 +73,7 @@ class RequestSimple(Request):
 
         print(
             "Target Response [{}]: {} sec for {}".format(
-                0 if failed else response.status_code, request_time, target.name
+                0 if failed else response.status_code, "{0:.3f}".format(request_time), target.name
             ),
             file=sys.stderr,
         )

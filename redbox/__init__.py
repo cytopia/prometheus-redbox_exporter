@@ -17,9 +17,6 @@ from .config import *
 from .request import *
 from .prometheus import *
 
-if os.environ.get("MYPY_CHECK", False):
-    from mypy_extensions import VarArg
-
 
 class Handler(BaseHTTPRequestHandler):
     """Simple webserver to serve metrics."""
@@ -136,10 +133,10 @@ class Handler(BaseHTTPRequestHandler):
         time_serving_end = timeit.default_timer()
 
         # Add timing information for logging
-        print("Threads: {0:.6f}s".format(time_threads_end - time_threads_start), file=sys.stderr)
-        print("Convert: {0:.6f}s".format(time_metrics_end - time_metrics_start), file=sys.stderr)
-        print("Respond: {0:.6f}s".format(time_serving_end - time_serving_start), file=sys.stderr)
-        print("Overall: {0:.6f}s".format(time_serving_end - time_calling_start), file=sys.stderr)
+        print("Threads: {0:.5f}s".format(time_threads_end - time_threads_start), file=sys.stderr)
+        print("Convert: {0:.5f}s".format(time_metrics_end - time_metrics_start), file=sys.stderr)
+        print("Respond: {0:.5f}s".format(time_serving_end - time_serving_start), file=sys.stderr)
+        print("Overall: {0:.5f}s".format(time_serving_end - time_calling_start), file=sys.stderr)
 
 
 class ThreadingSimpleServer(ThreadingMixIn, HTTPServer):
@@ -160,7 +157,7 @@ def run_webserver(conf: DsConfig) -> None:
     print(time.asctime(), "Starting webserver on {}:{}".format(conf.listen_addr, conf.listen_port))
     # Initialize and run web server
 
-    def handler_with_extra_args(cfg: DsConfig, req: Request) -> Callable[[VarArg(Any)], Handler]:
+    def handler_with_extra_args(cfg: DsConfig, req: Request) -> Callable[[Any], Handler]:
         return lambda *args: Handler(cfg, req, *args)
 
     # Make conf variable available in Handler
@@ -193,8 +190,6 @@ def main() -> None:
     except OSError as error:
         print(error, file=sys.stderr)
         sys.exit(1)
-
-    print(conf)
 
     # Initialize and run web server
     run_webserver(conf)

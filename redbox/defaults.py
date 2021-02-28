@@ -3,7 +3,7 @@
 # Credits
 DEF_NAME = "redbox_exporter"
 DEF_DESC = "Prometheus exporter that throws stuff to httpd endpoints and evaluates their response."
-DEF_VERSION = "0.1.2"
+DEF_VERSION = "0.1.3"
 DEF_AUTHOR = "cytopia"
 DEF_GITHUB = "https://github.com/cytopia/prometheus-redbox_exporter"
 
